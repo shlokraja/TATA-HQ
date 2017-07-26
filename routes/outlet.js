@@ -2918,18 +2918,20 @@ sum(case when method=\'sodexocoupon\' and (case when is24Hr then sales_date betw
 sum(case when method=\'credit\'  and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then (amount) else 0 end) as day_credit_amount , \
 sum(case when method=\'gprscard\' and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then amount else 0 end) as day_gprscard_amount , \
 sum(case when method=\'Wallet\' and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then amount else 0 end) as day_wallet_amount , \
-sum(case when location=\'dispenser\' then quantity else 0 end) as dispenser_month_count, \
+sum(case when location=\'dispenser\' and take_away=false then quantity else 0 end) as dispenser_month_count, \
+sum(case when location=\'dispenser\' and take_away=true then quantity else 0 end) as take_away_month_count, \
 sum(case when location=\'outside\' then quantity else 0 end) as outside_month_count, \
-sum(case when location=\'dispenser\'  then amount else 0 end) as dispenser_month_amount, \
+sum(case when location=\'dispenser\' then amount else 0 end) as dispenser_month_amount, \
 sum(case when location=\'outside\'  then  amount else 0 end) as outside_month_amount, \
-sum(case when location=\'dispenser\' and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then quantity else 0 end) as dispenser_day_count, \
+sum(case when location=\'dispenser\' and take_away=false and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then quantity else 0 end) as dispenser_day_count, \
+sum(case when location=\'dispenser\' and take_away=true and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date = now()::date end ) then quantity else 0 end) as take_away_day_count,\
 sum(case when location=\'outside\'  and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then quantity else 0 end) as outside_day_count, \
 sum(case when location=\'dispenser\' and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then amount else 0 end) as dispenser_day_amount,\
 sum(case when location=\'outside\'  and (case when is24Hr then sales_date between start_of_day and start_of_day+ interval \'1 day\'   else  sales_date::date=now()::date end ) then  amount else 0 end) as outside_day_amount \
-from  (select  s.outlet_id , method,sum(quantity) as quantity, round(sum(quantity*mrp)) as amount ,time as sales_date,f.location  from sales_order s \
+from  (select  s.outlet_id , method,sum(quantity) as quantity, round(sum(quantity*mrp)) as amount ,time as sales_date,f.location,f.take_away  from sales_order s \
 inner join bill_items  b on b.sales_order_id=s.id \
 inner join food_item f on f.id=b.food_item_id \
-where to_char(s.time,\'MMYYYY\')= to_char(now(),\'MMYYYY\') and s.outlet_id=$1 group by method,time,f.location,s.outlet_id) as month \
+where to_char(s.time,\'MMYYYY\')= to_char(now(),\'MMYYYY\') and s.outlet_id=$1 group by method,time,f.location,s.outlet_id,f.take_away) as month \
 inner join (select  id,start_of_day>end_of_day as is24Hr,case when start_of_day>end_of_day then \
 (case when now()::time>start_of_day then now()::date +start_of_day::time \
 else now()::date+start_of_day - interval \'1 day\' end ) \

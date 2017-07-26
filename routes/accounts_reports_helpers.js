@@ -153,6 +153,7 @@ var REPORT_FIELDS = {
         "outlet_name": 'Outlet',
         "entity_name": 'Restaurant',
         "session_name": 'Session',
+        "take_away": 'Take Away',
         "item_name": 'Item Name',
         "taken": 'Taken Qty',
         "sold": 'Sold Qty',
@@ -171,6 +172,7 @@ var REPORT_FIELDS = {
         "outlet_name": 'Outlet',
         "entity_name": 'Restaurant',
         "session_name": 'Session',
+        "take_away": 'Take Away',
         "item_name": 'Item Name',
         "taken": 'Taken Qty',
         "sold": 'Sold Qty',
@@ -384,6 +386,14 @@ var compute_daily_revenue_analysis = function (date, outlet,
             item["outlet_name"] = outlet.short_name;
             item["entity_name"] = entity;
             item["session_name"] = first.session;
+
+            if (first.take_away != undefined) {
+                item["take_away"] = first.take_away;
+            }
+            else {
+                item["take_away"] = "false";
+            }
+
             item["item_name"] = first.item_name;
             //console.log("###############po_id: " + first.po_id + "item_id: " + first.item_id);
             item["quantity"] = 0;

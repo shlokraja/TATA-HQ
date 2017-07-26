@@ -62,6 +62,7 @@ var fetchPurchaseOrders = function(outlet_id, date, async_callback) {
       fi.production_cost as production_cost, \
       fi.foodbox_fee as foodbox_fee, \
       fi.restaurant_fee as restaurant_fee, \
+      fi.take_away as take_away, \
       po.scheduled_delivery_time as scheduled_delivery_time, \
       r.entity as entity \
       FROM \
