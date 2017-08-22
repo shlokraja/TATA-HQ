@@ -8,9 +8,11 @@ var format = require('string-format');
 var moment = require('moment');
 require('moment-range');
 var dbUtils = require('../models/dbUtils');
+var bill_generator_utils = require('./bill_generator_utils'); //bill bundle changes
 var selected_outlet_id;
 var result_po_taken;
-// aggregator helpers
+
+// aggregator helpers 
 var aggregateByColumn = function (items, name) {
     return _.reduce(items, function (memo, item) {
         return memo + item[name];
@@ -191,6 +193,7 @@ var REPORT_FIELDS = {
         "outlet_name": 'Outlet',
         "entity_name": 'Restaurant',
         "session_name": 'Session',
+        "take_away": 'Take Away',
         "item_name": 'Item Name',
         "error_liability": 'Error Liability',
         "error_type": "Error Type",
@@ -253,16 +256,24 @@ var generate_bill_bundle_hq_link = function (date, outlet,
     var link = '<a target=\'_blank\' href=\'/generatebill/outlet/' + date + '/'
     + outlet.id + '/bills.pdf\'>bills</a>';
 
+          
     if (_.isEmpty(entity_consolidated_data)) {
         link = 'No bills found.';
     }
 
+    bill_generator_utils.fetch_bill_data(date,outlet.id,null,function(err,data){   
+    if ( ! _.isEmpty( data))
+    {
+        link = '<a target=\'_blank\' href=\'/generatebill/outlet/' + date + '/' + outlet.id + '/bills.pdf\'>bills</a>';
+        console.log("link::"+ link);    
+    }
     report["date"] = moment(date).format('Do MMMM YYYY');
     report["outlet_name"] = outlet.short_name;
     report["link"] = link;
     rows.push(report);
     callback(null, rows);
     return;
+});
 };
 
 // Daily receipt report generator
@@ -386,14 +397,17 @@ var compute_daily_revenue_analysis = function (date, outlet,
             item["outlet_name"] = outlet.short_name;
             item["entity_name"] = entity;
             item["session_name"] = first.session;
-
             if (first.take_away != undefined) {
-                item["take_away"] = first.take_away;
+                if (first.take_away == true) {
+                    item["take_away"] = "Yes";
+                }
+                else {
+                    item["take_away"] = "No";
+                }
             }
             else {
-                item["take_away"] = "false";
+                item["take_away"] = "No";
             }
-
             item["item_name"] = first.item_name;
             //console.log("###############po_id: " + first.po_id + "item_id: " + first.item_id);
             item["quantity"] = 0;
@@ -584,6 +598,17 @@ var compute_daily_error_details_report = function (date, outlet,
                 item["outlet_name"] = outlet.short_name;
                 item["entity_name"] = entity;
                 item["session_name"] = first.session;
+                if (first.take_away != undefined) {
+                    if (first.take_away == true) {
+                        item["take_away"] = "Yes";
+                    }
+                    else {
+                        item["take_away"] = "No";
+                    }
+                }
+                else {
+                    item["take_away"] = "No";
+                }
                 item["item_name"] = first.item_name;
                 item["error_liability"] = first.bucket;
                 item["error_type"] = status;
@@ -752,7 +777,7 @@ var FV_REPORTS = {
     },
     daily_receipts_gst: {
     name: "Daily Receipts GST",
-    generator: compute_daily_receipt_for_single_entity
+    generator: compute_daily_receipt_for_single_entity_gst
     },
     daily_revenue_analysis: {
         name: "Daily Revenue Analysis",
@@ -763,6 +788,7 @@ var FV_REPORTS = {
         generator: compute_daily_error_details_report
     }
 };
+
 
 var HQ_REPORTS = {
     hq_bill_bundles: {

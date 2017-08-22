@@ -381,7 +381,7 @@ router.get('/price_info/:outlet_id', function (req, res, next) {
 //     outlet_id=$1';
 
 
-var food_item_query="SELECT  f.id, f.name, f.item_tag, f.veg, f.location, f.side_order, f.master_id, \
+var food_item_query="SELECT  f.id, f.name, f.item_tag, f.take_away,f.veg, f.location, f.side_order, f.master_id, \
                         f.mrp, f.cgst_percent,f.sgst_percent,service_tax_percent, f.vat_percent, f.heating_required, f.heating_reduction, f.condiment_slot, o.abatement_percent, \
                         (case when ispublicsector and rr.id is not null  then rr.id else   r.id end ) as r_id,\
                         (case when ispublicsector and rr.id is not null then rr.name else   r.name end ) as r_name,\

@@ -1056,7 +1056,7 @@ router.get('/getcities', function (req, res) {
                     return;
                 }
 
-                var query_cities = 'select distinct(o.city),c.name from city c join outlet o on c.short_name = o.city where o.active = true';
+                var query_cities = 'select distinct(o.city),c.name from city c join outlet o on c.short_name = o.city where o.active = true and o.ismobileapp = true';
 
                 // Save Tokens to database
                 client.query(query_cities, function (query_err, resultcities) {
